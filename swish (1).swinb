@@ -1,0 +1,80 @@
+<div class="notebook">
+
+<div class="nb-cell program" name="p1">
+% Aufgabe 1: Listenstruktur und -operationen
+% a) Datentypprädikat für lineare Listen
+
+% Hilfsprädikat: Konkatenation von zwei Listen
+app(nil, Xs, Xs).
+app(list(X, X1s), Ys, list(X, X2s)) :- 
+    app(X1s, Ys, X2s).
+
+% Hilfsprädikat: Symbolische Addition von natürlichen Zahlen
+add(o, X, X).
+add(s(X), Y, s(XRes)) :- 
+    add(X, Y, XRes).
+
+% Induktionsanfang: Die leere Liste (nil) ist eine gültige Liste.
+linListe(nil).
+% Induktionsschluss: Ein Term ist eine gültige Liste, wenn Rest eine gültige Liste ist
+linListe(list(_, Rest)) :- 
+    linListe(Rest).
+
+% b) Operationen auf Liste
+%  mem(X, Ys): Überprüft, ob Ys das Element X enthält 
+% Basisfall: Das gesuchte Element X befindet sich am Anfang der Liste.
+mem(X, list(X, Rest)) :- 
+    linListe(Rest).
+% Induktionsschluss: Wenn das erste Element nicht X ist,ignoriere es und suche rekursiv im Rest der Liste weiter.
+mem(X, list(_, Rest)) :- 
+    mem(X, Rest).
+% attach(Xs, X, Ys): Ys ist Xs verlängert um das Element X 
+attach(Xs, X, Ys) :- 
+    linListe(Xs), 
+    app(Xs, list(X, nil), Ys).
+
+% --- infix(Xs, Ys): Ys enthält die Liste Xs
+infix(Xs, Ys) :- 
+    linListe(Xs), 
+    linListe(Ys), 
+    app(_, Rest, Ys), 
+    app(Xs, _, Rest).
+
+% --- rev(Xs, Ys): Ys ist das gespiegelte Xs
+% Induktionsanfang: Die gespiegelte Form einer leeren Liste ist wieder eine leere Liste.
+rev(nil, nil).
+% Induktionsschluss: Um die Liste umzudrehen, wird das erste Element (X) abgetrennt,  der Rest rekursiv umgedreht und danach X an das Ende angehängt.
+rev(list(X, Rest), Ys) :- 
+    linListe(list(X, Rest)), 
+    rev(Rest, RevRest), 
+    app(RevRest, list(X, nil), Ys).
+% Aufgabe 2: Binärbaumstruktur und -operationen
+% Datentypprädikat für Binärbäume
+% Induktionsanfang: Ein leerer Baum (nil) ist ein gültiger Binärbaum.
+binBaum(nil).
+% Induktionsschluss
+binBaum(tree(_, Lb, Rb)) :- 
+    binBaum(Lb), 
+    binBaum(Rb).
+% Operationen auf Binärbäumen
+
+
+% construct(Root, Lb, Rb, Xneub): Konstruktion eines neuen Baumes
+construct(Root, Lb, Rb, tree(Root, Lb, Rb)) :- 
+    binBaum(Lb), 
+    binBaum(Rb).
+
+%knotenanz(Xb, N): Berechnet die Anzahl der Knoten im Baum 
+
+% Induktionsanfang: Ein leerer Baum hat null Knoten
+knotenanz(nil, o).
+
+% Induktionsschluss: Die Gesamtanzahl der Knoten ist die Summe der Knoten im linken Teilbaum  und im rechten Teilbaum, plus 1 für die Wurzel.
+knotenanz(tree(_, Lb, Rb), s(Sum)) :- 
+    binBaum(tree(_, Lb, Rb)),
+    knotenanz(Lb, NL),
+    knotenanz(Rb, NR),
+    add(NL, NR, Sum).
+</div>
+
+</div>
