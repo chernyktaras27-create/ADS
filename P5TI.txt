@@ -1,0 +1,72 @@
+% --- TEIL A: Beschreibung des spezifischen PDAs (Hier fuer Magb) ---
+
+% 1. Zustandsmenge Z
+z(z).
+
+% 2. Eingabealphabet Sigma
+sigma(a).
+sigma(b).
+
+% 3. Kelleralphabet Gamma
+gamma(a).
+gamma(b).
+gamma(vS). % vS steht fuer das Startsymbol S 
+
+% 4. Startzustand
+start(z).
+
+% 5. Kellerbodensymbol
+kellerboden(vS).
+
+% 6. Transitionsfunktion delta(Zustand, Eingabe, Keller_Top, Neuer_Zustand, Neuer_Keller)
+
+% Fall 1: Terminalsymbole lesen und vom Keller entfernen
+delta(z, a, a, z, []).
+delta(z, b, b, z, []).
+
+% Fall 2: Variablen auf dem Keller (nix-Uebergaenge)
+% WICHTIG: S -> epsilon MUSS vor S -> aSb stehen (wegen Tiefensuche in Prolog!)
+delta(z, nix, vS, z, []).           % Entspricht der Regel S -> epsilon
+delta(z, nix, vS, z, [a, vS, b]).   % Entspricht der Regel S -> aSb
+
+
+% ======================================================================
+% --- TEIL B: Universeller PDA-Interpreter (ALLGEMEIN - NICHT AENDERN) ---
+
+% 1. Einzelschrittrelation es(...)
+
+% Fall 1: Ein echtes Zeichen vom Eingabeband lesen
+es(Z, [A | Ws_Rest], [K | Ks], Zneu, Ws_Rest, KellerNeu) :-
+    delta(Z, A, K, Zneu, K_Ersatz),
+    append(K_Ersatz, Ks, KellerNeu).
+
+% Fall 2: nix-Uebergang (das Eingabewort bleibt dabei unveraendert)
+es(Z, Ws, [K | Ks], Zneu, Ws, KellerNeu) :-
+    delta(Z, nix, K, Zneu, K_Ersatz),
+    append(K_Ersatz, Ks, KellerNeu).
+
+
+% 2. Transitiver Abschluss es_plus(...)
+
+% Basisfall: Das Wort ist leer UND der Keller ist komplett leer!
+es_plus(Z, [], []).
+
+% Rekursiver Schritt: Mache einen Einzelschritt und rufe dann es_plus rekursiv auf
+es_plus(Z, Ws, Keller) :-
+    es(Z, Ws, Keller, Z_Zwischen, Ws_Zwischen, Keller_Zwischen),
+    es_plus(Z_Zwischen, Ws_Zwischen, Keller_Zwischen).
+
+
+% 3. Hauptpraedikat lvonM(Ws) - Prueft, ob das Wort Ws vom PDA akzeptiert wird
+lvonM(Ws) :-
+    sigma_stern(Ws),        % Prueft, ob das Wort nur aus gueltigen Zeichen besteht
+    start(Z0),              % Holt den Startzustand
+    kellerboden(K0),        % Holt das Kellerbodensymbol
+    es_plus(Z0, Ws, [K0]).  % Startet die Berechnung mit Startzustand und Kellerboden
+
+
+% 4. Hilfspraedikat sigma_stern(...) zur Ueberpruefung des Alphabets
+sigma_stern([]).
+sigma_stern([A | Ws]) :-
+    sigma(A),
+    sigma_stern(Ws).
